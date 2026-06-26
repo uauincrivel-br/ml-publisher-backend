@@ -1,0 +1,13 @@
+services:
+  mlp-backend:
+    build: ./backend
+    ports:
+      - "8090:8090"
+    environment:
+      - APP_ENV=local
+      - JWT_SECRET=troque-este-segredo-em-producao
+      - DATABASE_URL=sqlite:///./data/mlp_enterprise.db
+      - MLB_REDIRECT_URI=http://localhost:8090/api/ml/callback
+    volumes:
+      - ./backend/data:/app/data
+      - ./backend/uploads:/app/uploads

@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>ML Publisher Enterprise V5</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--green:#10b981;--blue:#2563eb;--amber:#f59e0b;--red:#ef4444;--shadow:0 18px 50px rgba(15,23,42,.08);--radius:22px}*{box-sizing:border-box}body{margin:0;background:linear-gradient(120deg,#f8fafc,#eef6ff);font-family:Inter,Segoe UI,Arial,sans-serif;color:var(--ink)}.app{display:grid;grid-template-columns:280px 1fr;min-height:100vh}.side{background:#0b1220;color:#dbeafe;padding:26px;position:sticky;top:0;height:100vh}.brand{display:flex;gap:12px;align-items:center;margin-bottom:30px}.logo{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,#0ea5e9,#22c55e);display:grid;place-items:center;font-weight:900;color:white}.brand h1{font-size:18px;margin:0}.brand p{font-size:12px;margin:4px 0 0;color:#93c5fd}.nav button{width:100%;text-align:left;background:transparent;color:#cbd5e1;border:0;border-radius:14px;padding:13px 14px;margin:4px 0;cursor:pointer;font-weight:700}.nav button.active,.nav button:hover{background:rgba(255,255,255,.10);color:white}.main{padding:28px 34px}.top{display:flex;justify-content:space-between;gap:18px;align-items:center;margin-bottom:24px}.top h2{margin:0;font-size:30px}.top p{margin:6px 0 0;color:var(--muted)}.badge{padding:8px 12px;background:#dcfce7;color:#166534;border-radius:99px;font-weight:800;font-size:12px}.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:18px}.card{background:rgba(255,255,255,.9);border:1px solid rgba(226,232,240,.8);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}.metric small{color:var(--muted);font-weight:800;text-transform:uppercase;font-size:11px}.metric b{display:block;font-size:30px;margin-top:8px}.panel{display:grid;grid-template-columns:1.2fr .8fr;gap:18px}.section{display:none}.section.active{display:block}.drop{border:2px dashed #93c5fd;background:#eff6ff;border-radius:22px;padding:30px;text-align:center;cursor:pointer}.drop:hover{background:#dbeafe}.drop h3{margin:0 0 8px}.input{width:100%;border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:6px 0 12px;background:white}.btn{border:0;border-radius:14px;padding:12px 16px;font-weight:900;cursor:pointer;background:#0f172a;color:white}.btn.blue{background:var(--blue)}.btn.green{background:var(--green)}.btn.gray{background:#e2e8f0;color:#0f172a}.btn.red{background:var(--red)}table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}th{color:#475569;font-size:11px;text-transform:uppercase;background:#f8fafc}.pill{padding:5px 9px;border-radius:99px;font-size:11px;font-weight:900;display:inline-block}.ready{background:#dcfce7;color:#166534}.pending{background:#fef3c7;color:#92400e}.blocked{background:#fee2e2;color:#991b1b}.muted{color:var(--muted)}.logbox{height:300px;overflow:auto;background:#020617;color:#dbeafe;border-radius:18px;padding:14px;font-family:Consolas,monospace;font-size:12px;white-space:pre-wrap}.mapgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.mapitem{background:#f8fafc;border:1px solid var(--line);border-radius:14px;padding:12px}.mapitem small{color:var(--muted);display:block;font-weight:800}.mapitem b{font-size:13px}@media(max-width:1000px){.app{grid-template-columns:1fr}.side{height:auto;position:relative}.grid{grid-template-columns:repeat(2,1fr)}.panel{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand"><div class="logo">ML</div><div><h1>Publisher Enterprise</h1><p>V5 • SaaS Comercial</p></div></div>
+    <div class="nav">
+      <button class="active" onclick="show('dashboard',this)">📊 Dashboard</button>
+      <button onclick="show('upload',this)">📁 Upload Inteligente</button>
+      <button onclick="show('produtos',this)">📦 Produtos</button>
+      <button onclick="show('integracao',this)">🔐 Integração ML</button>
+      <button onclick="show('logs',this)">📜 Auditoria</button>
+    </div>
+  </aside>
+  <main class="main">
+    <div class="top"><div><h2 id="title">Dashboard Executivo</h2><p>Publicação segura, pausada e auditável para Mercado Livre.</p></div><div class="badge" id="apiStatus">API não testada</div></div>
+
+    <section id="dashboard" class="section active">
+      <div class="grid"><div class="card metric"><small>Produtos importados</small><b id="mRows">0</b></div><div class="card metric"><small>Prontos</small><b id="mReady">0</b></div><div class="card metric"><small>Pendentes</small><b id="mPending">0</b></div><div class="card metric"><small>Bloqueados</small><b id="mBlocked">0</b></div></div>
+      <div class="panel"><div class="card"><h3>Continuidade Segura</h3><p class="muted">O sistema usa o banco de histórico para não repetir SKU nem offset.</p><button class="btn blue" onclick="checkContinuity()">Ver próximo offset seguro</button><pre id="continuity" class="logbox" style="height:180px"></pre></div><div class="card"><h3>Publicação</h3><p class="muted">Sempre use simulação antes do real. Real exige token ML configurado.</p><input class="input" id="sellerId" value="118533883" placeholder="Seller ID"><button class="btn gray" onclick="publish(true)">Simular 1 SKU</button> <button class="btn green" onclick="publish(false)">Publicar 1 SKU pausado</button></div></div>
+    </section>
+
+    <section id="upload" class="section">
+      <div class="panel"><div class="card"><h3>Upload inteligente de planilha</h3><div class="drop" onclick="document.getElementById('file').click()"><h3>Arraste ou clique para anexar</h3><p class="muted">Excel/CSV com SKU, título, categoria ID, preço, estoque e dados completos.</p><input id="file" type="file" accept=".xlsx,.xls,.csv" hidden onchange="uploadFile(this.files[0])"></div><br><button class="btn blue" onclick="document.getElementById('file').click()">Selecionar planilha</button></div><div class="card"><h3>Mapeamento detectado</h3><div class="mapgrid" id="mapping"></div></div></div>
+    </section>
+
+    <section id="produtos" class="section"><div class="card"><h3>Produtos importados</h3><p class="muted">Apenas produtos prontos e não publicados entram na fila segura.</p><button class="btn gray" onclick="loadProducts()">Atualizar produtos</button><br><br><div style="overflow:auto"><table><thead><tr><th>Offset</th><th>SKU</th><th>Título</th><th>Preço</th><th>Status</th><th>Motivo</th></tr></thead><tbody id="rows"></tbody></table></div></div></section>
+
+    <section id="integracao" class="section"><div class="panel"><div class="card"><h3>Conta Mercado Livre</h3><input class="input" id="mlSeller" value="118533883" placeholder="Seller ID"><input class="input" id="clientId" placeholder="CLIENT ID / APP ID"><input class="input" id="clientSecret" placeholder="CLIENT SECRET"><input class="input" id="accessToken" placeholder="Access Token"><button class="btn blue" onclick="saveML()">Salvar no backend seguro</button> <button class="btn green" onclick="validateML()">Validar token/seller</button></div><div class="card"><h3>Resposta</h3><pre id="mlResp" class="logbox"></pre></div></div></section>
+
+    <section id="logs" class="section"><div class="card"><h3>Auditoria</h3><button class="btn gray" onclick="loadLogs()">Atualizar logs</button><br><br><pre id="audit" class="logbox"></pre></div></section>
+  </main>
+</div>
+<script>
+const API='http://localhost:8090'; let token=localStorage.getItem('mlp_token')||''; let importId='';
+function show(id,btn){document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');document.getElementById('title').textContent=btn.textContent.replace(/^[^a-zA-ZÀ-ÿ]+/,'')}
+async function api(path,opts={}){opts.headers=Object.assign({'Authorization':'Bearer '+token},opts.headers||{});let r=await fetch(API+path,opts);let t=await r.text();let data;try{data=JSON.parse(t)}catch(e){data=t}if(!r.ok)throw data;return data}
+async function init(){try{let h=await fetch(API+'/api/health').then(r=>r.json());document.getElementById('apiStatus').textContent='API online • '+h.service}catch(e){document.getElementById('apiStatus').textContent='API offline'}if(!token){let body=JSON.stringify({email:'admin@mlpublisher.local',password:'admin123'});try{let a=await fetch(API+'/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body}).then(r=>r.json());token=a.token;localStorage.setItem('mlp_token',token)}catch(e){let a=await fetch(API+'/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body}).then(r=>r.json());token=a.token;localStorage.setItem('mlp_token',token)}}checkContinuity();loadProducts();}
+async function uploadFile(file){if(!file)return;let fd=new FormData();fd.append('file',file);let res=await api('/api/import/upload',{method:'POST',body:fd});importId=res.import_id;document.getElementById('mRows').textContent=res.rows;document.getElementById('mReady').textContent=res.ready;document.getElementById('mPending').textContent=res.pending;document.getElementById('mBlocked').textContent=res.blocked;let m=document.getElementById('mapping');m.innerHTML='';Object.entries(res.mapping).forEach(([k,v])=>m.innerHTML+=`<div class="mapitem"><small>${k}</small><b>${v||'não detectado'}</b></div>`);await loadProducts();await checkContinuity();}
+async function loadProducts(){let path='/api/products?limit=100'+(importId?'&import_id='+importId:'');let data=await api(path);let tb=document.getElementById('rows');tb.innerHTML='';data.forEach(p=>tb.innerHTML+=`<tr><td>${p.offset}</td><td>${p.sku||''}</td><td>${p.title||''}</td><td>${p.price||0}</td><td><span class="pill ${p.status}">${p.status}</span></td><td>${p.reason||''}</td></tr>`)}
+async function checkContinuity(){let data=await api('/api/continuity/next'+(importId?'?import_id='+importId:''));document.getElementById('continuity').textContent=JSON.stringify(data,null,2);}
+async function saveML(){let body={seller_id:document.getElementById('mlSeller').value,client_id:document.getElementById('clientId').value,client_secret:document.getElementById('clientSecret').value,access_token:document.getElementById('accessToken').value};let data=await api('/api/ml/account',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});document.getElementById('mlResp').textContent=JSON.stringify(data,null,2)}
+async function validateML(){let sid=document.getElementById('mlSeller').value;let data=await api('/api/ml/validate-token/'+sid,{method:'POST'});document.getElementById('mlResp').textContent=JSON.stringify(data,null,2)}
+async function publish(dry){let sid=document.getElementById('sellerId').value;let data=await api('/api/publish/start',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({seller_id:sid,quantidade:1,delay_seconds:240,dry_run:dry})});alert(JSON.stringify(data,null,2));checkContinuity();loadLogs();}
+async function loadLogs(){let data=await api('/api/audit/logs?limit=80');document.getElementById('audit').textContent=JSON.stringify(data,null,2)}
+init();
+</script>
+</body>
+</html>

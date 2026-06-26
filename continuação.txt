@@ -1,0 +1,52 @@
+Quero continuar o desenvolvimento do meu projeto SaaS chamado ml-publisher-enterprise.
+
+Contexto:
+Já realizamos correções críticas em:
+
+SQLAlchemy (engine e database.py)
+Alembic (env.py corrigido)
+Base centralizada
+Correções de import e arquitetura
+
+Estado atual:
+
+Projeto já conecta ao PostgreSQL
+Alembic já está parcialmente configurado
+Estrutura ainda está sendo estabilizada
+
+Objetivo final:
+
+Finalizar 100% a arquitetura SaaS (sem erros)
+Garantir Alembic funcionando (autogenerate + upgrade)
+Criar migrations finais (users, usage_control, billing, products)
+Corrigir qualquer erro restante linha por linha
+Validar backend rodando sem erro
+Implementar fila de publicação (worker)
+Fazer integração real com API do Mercado Livre
+Executar teste final: cadastro real de produto no Mercado Livre
+
+Regras:
+
+Analise TODOS os arquivos novamente (linha por linha)
+Não assumir nada — apenas corrigir baseado no código real
+Corrigir definitivamente, sem soluções parciais
+Sempre entregar arquivos completos prontos para copiar e colar
+Manter padrão SaaS profissional
+
+Comece fazendo um diagnóstico completo do estado atual do projeto e depois continue a partir do último ponto corrigido.
+
+
+“quero simular publicação no Mercado Livre antes do teste real”
+
+
+
+
+Depois desse ponto, a sequência correta será:
+
+1. estabilização do banco (✔ você já está aqui)
+2. migrations SaaS completas
+3. fila de publicação (worker)
+4. integração Mercado Livre API
+5. primeiro POST real de produto
+6. validação em produção
+
