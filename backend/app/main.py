@@ -9,6 +9,7 @@ from typing import Optional
 import jwt
 import pandas as pd
 import requests
+from backend.app.core.redis import product_queue
 
 from fastapi import FastAPI, UploadFile, File, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
