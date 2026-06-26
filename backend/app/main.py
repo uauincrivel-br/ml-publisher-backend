@@ -1,3 +1,4 @@
+
 import os
 import time
 import json
@@ -9,25 +10,20 @@ import jwt
 import pandas as pd
 import requests
 
-from fastapi import FastAPI, UploadFile, File, HTTPException, Depends, Header
+from fastapi import FastAPI, UploadFile, File, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker, Session
+from sqlalchemy.orm import declarative_base, sessionmaker
 
-# =========================================================
-# CONFIG
-# =========================================================
+from app.core.redis import product_queue
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 JWT_SECRET = os.getenv("JWT_SECRET", "mlp-v5-secret")
 
 if not DATABASE_URL:
     raise Exception("DATABASE_URL não definida")
-
-# =========================================================
-# ENGINE (CORRIGIDO PRODUÇÃO RENDER)
-# =========================================================
 
 if DATABASE_URL.startswith("sqlite"):
     engine = create_engine(
@@ -44,10 +40,6 @@ else:
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 Base = declarative_base()
 
-# =========================================================
-# APP
-# =========================================================
-
 app = FastAPI(title="ML Publisher Enterprise V5", version="5.0.0")
 
 app.add_middleware(
@@ -58,32 +50,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# =========================================================
-# HEALTH
-# =========================================================
+security = HTTPBearer()
+
+def get_current_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    return credentials.credentials
 
 @app.get("/api/health")
 def health():
-    return {
-        "status": "ok",
-        "service": "ml-publisher-enterprise-v5",
-        "environment": os.getenv("APP_ENV", "local")
-    }
-
-# =========================================================
-# DB DEP
-# =========================================================
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-# =========================================================
-# AUTH (JWT BLINDADO)
-# =========================================================
+    return {"status": "ok"}
 
 def create_token(user_id: int, email: str):
     return jwt.encode(
@@ -96,32 +70,15 @@ def create_token(user_id: int, email: str):
         algorithm="HS256"
     )
 
-def get_current_user(authorization: Optional[str] = Header(None)):
-    if not authorization:
-        raise HTTPException(status_code=401, detail="missing_token")
-
-    try:
-        token = authorization.split(" ")[1]
-        return jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
-    except Exception as e:
-        raise HTTPException(status_code=401, detail=f"invalid_token: {str(e)}")
-
-# =========================================================
-# LOGIN TEST (TEMPORÁRIO)
-# =========================================================
-
 @app.post("/api/auth/login")
 def login():
-    return {
-        "token": create_token(1, "admin@admin.com")
-    }
-
-# =========================================================
-# UPLOAD (FIX PRODUÇÃO)
-# =========================================================
+    return {"token": create_token(1, "admin@admin.com")}
 
 @app.post("/api/import/upload")
-def upload(file: UploadFile = File(...), user=Depends(get_current_user)):
+def upload(
+    file: UploadFile = File(...),
+    token: str = Depends(get_current_token)
+):
 
     path = f"/tmp/{file.filename}"
 
@@ -130,8 +87,19 @@ def upload(file: UploadFile = File(...), user=Depends(get_current_user)):
 
     df = pd.read_excel(path)
 
+    job_data = {
+        "file_path": path,
+        "token": token
+    }
+
+    job = product_queue.enqueue(
+        "app.workers.product_worker.process_product_job",
+        job_data
+    )
+
     return {
         "ok": True,
         "rows": len(df),
-        "columns": list(df.columns)
+        "job_id": job.id,
+        "status": "queued"
     }
